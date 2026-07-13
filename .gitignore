@@ -10,3 +10,4 @@ venv/
 .env
 db.sqlite3
 .DS_Store
+project_overview.md
