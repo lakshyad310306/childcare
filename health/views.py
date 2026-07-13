@@ -192,6 +192,23 @@ def maternal_dashboard(request):
                 })
         calendar_weeks.append(week_days)
         
+    # Calculate last 7 days for the bar chart UI
+    last_7_days = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        # Fetch log efficiently (we might need to check the DB if it crosses month boundaries, but for now we fallback to the db if not in current month dict)
+        if d.month == current_month and d.year == current_year:
+            log = logs_by_day.get(d.day)
+        else:
+            log = MotherExerciseMoodLog.objects.filter(mother=mother, date=d).first()
+        
+        last_7_days.append({
+            'day_name': d.strftime('%a'),
+            'day': d.day,
+            'log': log,
+            'is_today': (i == 0)
+        })
+        
     # Calculate shopping list based on children's recommendations and mother's pantry
     shopping_list = set()
     pantry_items = [item.strip().lower() for item in mother.pantry_items.split(',')] if mother.pantry_items else []
@@ -211,6 +228,26 @@ def maternal_dashboard(request):
         except Exception:
             pass
             
+    # Calculate stats for the current month
+    total_days_logged = len(logs_by_day)
+    great_days = sum(1 for log in logs_by_day.values() if log.mood == 'great')
+    good_days = sum(1 for log in logs_by_day.values() if log.mood == 'good')
+    tired_days = sum(1 for log in logs_by_day.values() if log.mood == 'tired')
+    stress_days = sum(1 for log in logs_by_day.values() if log.mood == 'overwhelmed')
+    
+    exercise_days = sum(1 for log in logs_by_day.values() if log.exercise_done)
+    affirmation_days = sum(1 for log in logs_by_day.values() if log.affirmation_done)
+    
+    mood_counts = {'Great': great_days, 'Good': good_days, 'Tired': tired_days, 'Overwhelmed': stress_days}
+    most_frequent_mood = max(mood_counts, key=mood_counts.get) if total_days_logged > 0 else "None"
+    
+    month_stats = {
+        'total_logged': total_days_logged,
+        'most_frequent_mood': most_frequent_mood,
+        'exercise_days': exercise_days,
+        'affirmation_days': affirmation_days
+    }
+            
     return render(request, 'health/maternal_dashboard.html', {
         'mother': mother,
         'maternal_context': maternal_context,
@@ -221,6 +258,8 @@ def maternal_dashboard(request):
         'mood_logs': mood_logs,
         'shopping_list': list(shopping_list),
         'calendar_weeks': calendar_weeks,
+        'last_7_days': last_7_days,
+        'month_stats': month_stats,
         'calendar_month_name': month_name,
         'calendar_year': current_year,
     })

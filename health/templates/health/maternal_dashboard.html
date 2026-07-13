@@ -382,9 +382,11 @@
             </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Mood & Exercise Tracker -->
-        <div class="bg-white rounded-[2.5rem] p-8 shadow-soft border border-slate-100">
+<!-- Mood & Exercise Tracker -->
+<div class="bg-white rounded-[2.5rem] p-8 shadow-soft border border-slate-100 mb-12">
             <h4 class="text-xl font-black mb-6 text-slate-800 flex items-center gap-2">
                 <i class="fas fa-calendar-check text-indigo-500"></i> Daily Mood & Exercise
             </h4>
@@ -415,80 +417,119 @@
                 </button>
             </form>
             
-            <!-- Full Responsive Monthly Grid Calendar -->
-            <div class="bg-slate-50 p-5 rounded-[2rem] border border-slate-200 shadow-inner">
-                <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
-                    <p class="text-[11px] font-black text-slate-500 uppercase tracking-widest">
-                        <i class="fas fa-calendar-days text-indigo-500 mr-1.5"></i> {{ calendar_month_name }} {{ calendar_year }} Status
-                    </p>
-                    <div class="flex gap-2 text-[8px] font-bold text-slate-400">
-                        <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Great</span>
-                        <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Calm</span>
-                        <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Tired</span>
-                        <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Stress</span>
+            <!-- Charts and Calendars Row -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-8">
+                
+                <!-- Weekly Mood Bar Chart (Pill Shape) -->
+                <div class="bg-[#f5f5ed] p-8 rounded-[2.5rem] shadow-soft relative overflow-hidden flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
+                        <div>
+                            <h4 class="text-xl font-black text-slate-800">Mood in The Last Week</h4>
+                            <p class="text-xs font-bold text-slate-500 mt-1">Past 7 Days Status</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-black text-slate-800">Legend</p>
+                            <div class="flex gap-2 text-[10px] font-bold text-slate-500 mt-1">
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Great</span>
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sky-400"></span> Calm</span>
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Tired</span>
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-400"></span> Stress</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 w-full relative min-h-[200px]">
+                        <canvas id="moodLineChart"></canvas>
+                    </div>
+                    
+                    <!-- Stats embedded in chart card -->
+                    <div class="grid grid-cols-4 gap-2 mt-8 pt-6 border-t border-slate-200 w-full">
+                        <div class="text-center group cursor-default">
+                            <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Top Mood</span>
+                            <span class="text-sm font-black text-[#222222] group-hover:text-indigo-600 transition-colors">{{ month_stats.most_frequent_mood }}</span>
+                        </div>
+                        <div class="text-center border-l border-slate-200 group cursor-default">
+                            <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Logged</span>
+                            <span class="text-sm font-black text-[#222222] group-hover:text-indigo-600 transition-colors">{{ month_stats.total_logged }}</span>
+                        </div>
+                        <div class="text-center border-l border-slate-200 group cursor-default">
+                            <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Exercise</span>
+                            <span class="text-sm font-black text-[#222222] group-hover:text-indigo-600 transition-colors">{{ month_stats.exercise_days }}</span>
+                        </div>
+                        <div class="text-center border-l border-slate-200 group cursor-default">
+                            <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Affirm</span>
+                            <span class="text-sm font-black text-[#222222] group-hover:text-indigo-600 transition-colors">{{ month_stats.affirmation_days }}</span>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="grid grid-cols-7 gap-2">
-                    <div class="text-xs font-black text-slate-400 uppercase text-center pb-2">Mon</div>
-                    <div class="text-xs font-black text-slate-400 uppercase text-center pb-2">Tue</div>
-                    <div class="text-xs font-black text-slate-400 uppercase text-center pb-2">Wed</div>
-                    <div class="text-xs font-black text-slate-400 uppercase text-center pb-2">Thu</div>
-                    <div class="text-xs font-black text-slate-400 uppercase text-center pb-2">Fri</div>
-                    <div class="text-xs font-black text-slate-400 uppercase text-center pb-2">Sat</div>
-                    <div class="text-xs font-black text-slate-400 uppercase text-center pb-2">Sun</div>
+
+                <!-- Monthly Full Grid Calendar -->
+                <div class="bg-[#f5f5ed] p-8 rounded-[2.5rem] shadow-soft relative overflow-hidden flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-6 flex-wrap gap-2">
+                        <h4 class="text-xl font-black text-slate-800">
+                            {{ calendar_month_name }} <span class="text-slate-400 font-bold">{{ calendar_year }}</span>
+                        </h4>
+                        <div class="flex gap-4 text-[10px] font-bold text-slate-500 bg-white/50 px-4 py-2 rounded-xl shadow-sm border border-white/50">
+                            <span class="flex items-center gap-1.5"><i class="fas fa-person-running text-sky-500"></i> Exercise</span>
+                            <span class="flex items-center gap-1.5"><i class="fas fa-heart text-indigo-500"></i> Affirmation</span>
+                        </div>
+                    </div>
                     
-                    {% for week in calendar_weeks %}
-                        {% for day_data in week %}
-                            {% if day_data.day == '' %}
-                                <div class="aspect-square bg-slate-100/30 rounded-xl border border-slate-100/50"></div>
-                            {% else %}
-                                <div class="relative group aspect-square bg-white/80 backdrop-blur-sm border {% if day_data.is_today %}border-indigo-500 ring-4 ring-indigo-100 shadow-md{% else %}border-slate-200 shadow-sm hover:shadow-md{% endif %} rounded-2xl p-2 flex flex-col justify-between hover:border-indigo-400 transition-all cursor-pointer">
-                                    <span class="text-sm font-black {% if day_data.is_today %}text-indigo-600{% else %}text-slate-600{% endif %}">
-                                        {{ day_data.day }}
-                                    </span>
-                                    
-                                    {% if day_data.log %}
-                                        <div class="flex gap-1.5 justify-center items-center mb-1">
-                                            <!-- Mood Dot -->
-                                            <span class="w-3 h-3 rounded-full shadow-sm 
-                                                {% if day_data.log.mood == 'great' %}bg-emerald-500
-                                                {% elif day_data.log.mood == 'good' %}bg-sky-400
-                                                {% elif day_data.log.mood == 'tired' %}bg-amber-400
-                                                {% else %}bg-rose-500{% endif %}">
-                                            </span>
-                                            
-                                            <!-- Exercise Icon -->
-                                            {% if day_data.log.exercise_done %}
-                                                <i class="fas fa-person-running text-[10px] text-sky-500"></i>
-                                            {% endif %}
-                                            
-                                            <!-- Affirmation Icon -->
-                                            {% if day_data.log.affirmation_done %}
-                                                <i class="fas fa-heart text-[10px] text-indigo-500 animate-pulse"></i>
-                                            {% endif %}
-                                        </div>
+                    <div class="grid grid-cols-7 gap-2 flex-1">
+                        <div class="text-[10px] font-black text-slate-400 uppercase text-center pb-1">Mon</div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase text-center pb-1">Tue</div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase text-center pb-1">Wed</div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase text-center pb-1">Thu</div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase text-center pb-1">Fri</div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase text-center pb-1">Sat</div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase text-center pb-1">Sun</div>
+                        
+                        {% for week in calendar_weeks %}
+                            {% for day_data in week %}
+                                {% if day_data.day == '' %}
+                                    <div class="aspect-square bg-slate-200/30 rounded-xl border border-slate-200/50"></div>
+                                {% else %}
+                                    <div class="relative group aspect-square bg-white border {% if day_data.is_today %}border-[#222222] ring-2 ring-[#222222]/20{% else %}border-slate-100{% endif %} rounded-2xl p-2 flex flex-col justify-between hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 cursor-pointer">
+                                        <span class="text-xs font-black {% if day_data.is_today %}text-[#222222]{% else %}text-slate-600{% endif %} transition-colors group-hover:text-slate-900">
+                                            {{ day_data.day }}
+                                        </span>
                                         
-                                        <!-- Hover Tooltip -->
-                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-3 py-2 bg-slate-800 text-white text-xs font-bold rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                                            Mood: {{ day_data.log.get_mood_display }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
+                                        {% if day_data.log %}
+                                            <div class="flex gap-1 justify-center items-center mb-0.5 w-full flex-wrap">
+                                                <!-- Mood Dot -->
+                                                <span class="w-2.5 h-2.5 rounded-full 
+                                                    {% if day_data.log.mood == 'great' %}bg-emerald-400
+                                                    {% elif day_data.log.mood == 'good' %}bg-sky-400
+                                                    {% elif day_data.log.mood == 'tired' %}bg-amber-400
+                                                    {% else %}bg-rose-400{% endif %}">
+                                                </span>
+                                                
+                                                <!-- Exercise Icon -->
+                                                {% if day_data.log.exercise_done %}
+                                                    <i class="fas fa-person-running text-[9px] text-sky-500"></i>
+                                                {% endif %}
+                                                
+                                                <!-- Affirmation Icon -->
+                                                {% if day_data.log.affirmation_done %}
+                                                    <i class="fas fa-heart text-[9px] text-indigo-500"></i>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- Hover Tooltip -->
+                                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-max px-3 py-1.5 bg-[#222222] text-white text-[10px] font-bold rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-20">
+                                                Mood: {{ day_data.log.get_mood_display }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         {% endfor %}
-                    {% endfor %}
-                </div>
-                
-                <div class="flex gap-6 mt-6 text-xs font-bold text-slate-500 border-t border-slate-200/80 pt-4 justify-center">
-                    <span class="flex items-center gap-1.5"><i class="fas fa-person-running text-sky-500"></i> Exercise Done</span>
-                    <span class="flex items-center gap-1.5"><i class="fas fa-heart text-indigo-500"></i> Affirmation Done</span>
+                    </div>
                 </div>
             </div>
-        </div>
 
-    </div>
-</div>
+
+        </div>
 {% else %}
 <div class="bg-white rounded-[3rem] p-20 text-center shadow-soft border border-slate-100">
     <h2 class="text-5xl font-black text-slate-800 mb-6">Initialize Maternal Care.</h2>
@@ -505,5 +546,92 @@ function toggleAlt(meal) {
         el.classList.toggle('hidden');
     }
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('moodLineChart');
+    if (ctx) {
+        let gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 200);
+        gradient.addColorStop(0, 'rgba(34, 34, 34, 0.4)'); // Dark #222222
+        gradient.addColorStop(1, 'rgba(34, 34, 34, 0.0)');
+        
+        const labels = [{% for d in last_7_days %}"{{ d.day_name }} {{ d.day }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+        
+        const dataPoints = [
+            {% for d in last_7_days %}
+                {% if d.log %}
+                    {% if d.log.mood == 'great' %}4
+                    {% elif d.log.mood == 'good' %}3
+                    {% elif d.log.mood == 'tired' %}2
+                    {% else %}1{% endif %}
+                {% else %}null{% endif %}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Mood Score',
+                    data: dataPoints,
+                    borderColor: '#222222',
+                    backgroundColor: gradient,
+                    borderWidth: 4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#222222',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let value = context.parsed.y;
+                                if(value === 4) return 'Great';
+                                if(value === 3) return 'Calm';
+                                if(value === 2) return 'Tired';
+                                if(value === 1) return 'Stress';
+                                return '';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 1,
+                        max: 4,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                if(value === 4) return 'Great';
+                                if(value === 3) return 'Calm';
+                                if(value === 2) return 'Tired';
+                                if(value === 1) return 'Stress';
+                            },
+                            font: { size: 10, weight: 'bold' },
+                            color: '#94a3b8'
+                        },
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)',
+                            drawBorder: false,
+                        }
+                    },
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+    }
+});
 </script>
 {% endblock %}
