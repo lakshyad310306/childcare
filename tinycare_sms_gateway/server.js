@@ -1,6 +1,16 @@
 const express = require('express');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
+const QRCodeImage = require('qrcode');
+const path = require('path');
+
+// Global unhandled promise rejection and exception handler to prevent process crashes
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+});
 
 const app = express();
 const port = 3000;
@@ -11,25 +21,56 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         args: ['--no-sandbox', '--disable-setuid-sandbox']
-    }
+    },
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
 });
 
-client.on('qr', (qr) => {
+let isClientReady = false;
+
+client.on('qr', async (qr) => {
     console.log('QR RECEIVED. Please scan it using WhatsApp:');
     qrcode.generate(qr, { small: true });
+
+    // Also save as PNG in artifacts directory for easy scanning
+    try {
+        const qrPath = 'C:/Users/laksh/.gemini/antigravity-ide/brain/f7653888-bd1a-4d62-b34c-7cbfb66692c7/qr_code.png';
+        await QRCodeImage.toFile(qrPath, qr, {
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            },
+            width: 300
+        });
+        console.log(`Saved QR code image to: ${qrPath}`);
+    } catch (err) {
+        console.error('Failed to save QR code image:', err);
+    }
 });
 
 client.on('ready', () => {
     console.log('WhatsApp Client is ready!');
+    isClientReady = true;
 });
 
-client.initialize();
+client.on('disconnected', (reason) => {
+    console.log('WhatsApp Client was disconnected:', reason);
+    isClientReady = false;
+});
+
+client.initialize().catch(err => {
+    console.error('Error during client.initialize():', err);
+});
 
 app.post('/dispatch-message/', async (req, res) => {
     const { phone, message } = req.body;
 
     if (!phone || !message) {
         return res.status(400).json({ error: 'Phone and message are required fields.' });
+    }
+
+    if (!isClientReady) {
+        console.error('Failed to send message: WhatsApp client is not ready yet.');
+        return res.status(503).json({ error: 'WhatsApp client is not ready yet. Please wait for the gateway to connect.' });
     }
 
     // Clean phone number: remove non-numeric characters
