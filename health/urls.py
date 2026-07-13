@@ -53,4 +53,6 @@ urlpatterns = [
     
     # WhatsApp Integration
     path('whatsapp-demo/', views.whatsapp_demo_trigger_view, name='whatsapp_demo_trigger_view'),
+    path('child/<int:child_id>/whatsapp-vax-alert/', views.trigger_whatsapp_vax_alert, name='trigger_whatsapp_vax_alert'),
+    path('parent/maternal/whatsapp-alert/', views.trigger_maternal_whatsapp_alert, name='trigger_maternal_whatsapp_alert'),
 ]

@@ -1176,3 +1176,121 @@ def whatsapp_demo_trigger_view(request):
     else:
         error_msg = child_response.get('error') if child_response and 'error' in child_response else 'Failed to dispatch WhatsApp alert via gateway.'
         return JsonResponse({'error': error_msg, 'gateway_response': child_response}, status=500)
+
+@login_required
+@user_passes_test(is_admin)
+def trigger_whatsapp_vax_alert(request, child_id):
+    """
+    Triggers a personalized WhatsApp alert for a specific child's vaccination schedule
+    and dispatches it to the parent's phone number.
+    """
+    from .utils import send_tinycare_whatsapp_alert
+    from .models import ChildProfile, VaccinationSchedule
+    
+    child = get_object_or_404(ChildProfile, id=child_id)
+    
+    # Get a pending vaccination or dummy vaccine alert
+    vax_schedule = VaccinationSchedule.objects.filter(child=child, status='pending').first()
+    
+    vaccine_name = vax_schedule.vaccine.name if vax_schedule else "OPV (Oral Polio Vaccine)"
+    consequence = vax_schedule.vaccine.consequence_text if vax_schedule and vax_schedule.vaccine.consequence_text else "Leaving your child vulnerable to severe, preventable diseases which can cause lifelong complications."
+    
+    parent_phone = child.parent.phone_number
+    if not parent_phone:
+        return JsonResponse({'error': f'Parent of {child.name} does not have a phone number registered.'}, status=400)
+        
+    target_lang = getattr(child.parent, 'preferred_language', 'en')
+        
+    child_response = send_tinycare_whatsapp_alert(
+        parent_phone=parent_phone,
+        child_name=child.name,
+        vaccine_name=vaccine_name,
+        health_consequence=consequence,
+        target_lang=target_lang
+    )
+    
+    if child_response and child_response.get('success'):
+        return JsonResponse({
+            'success': f'WhatsApp alert for {child.name} dispatched successfully to parent.', 
+            'gateway_response': child_response
+        })
+    else:
+        error_msg = child_response.get('error') if child_response and 'error' in child_response else 'Failed to dispatch WhatsApp alert via gateway.'
+        return JsonResponse({'error': error_msg, 'gateway_response': child_response}, status=500)
+
+@login_required
+@user_passes_test(is_parent)
+def trigger_maternal_whatsapp_alert(request):
+    """
+    Triggers a maternal WhatsApp alert containing the mother's daily tip and recovery info,
+    and sends it to her phone number.
+    """
+    from .utils import send_tinycare_maternal_whatsapp_alert
+    from .models import MotherProfile, RecoveryMetric
+    
+    try:
+        mother = request.user.mother_profile
+    except Exception:
+        mother = None
+        
+    if not mother:
+        return JsonResponse({'error': 'No maternal care profile found.'}, status=400)
+        
+    parent_phone = request.user.phone_number
+    if not parent_phone:
+        return JsonResponse({'error': 'No phone number registered for your account.'}, status=400)
+        
+    target_lang = getattr(request.user, 'preferred_language', 'en')
+    
+    # Retrieve the latest RecoveryMetric for vital issues detection
+    latest_metric = RecoveryMetric.objects.filter(mother=mother).order_by('-recorded_at').first()
+    
+    vital_issues = []
+    if latest_metric:
+        # Check symptoms
+        symptom_map = {
+            'fever': 'Fever',
+            'heavy_bleeding': 'Heavy Bleeding',
+            'severe_headache': 'Severe Headache',
+            'pain': 'Pain'
+        }
+        for s in latest_metric.symptoms:
+            if s in symptom_map:
+                vital_issues.append(symptom_map[s])
+        
+        # Check BP
+        if latest_metric.systolic_bp and latest_metric.systolic_bp >= 140:
+            vital_issues.append("High Systolic Blood Pressure")
+        if latest_metric.diastolic_bp and latest_metric.diastolic_bp >= 90:
+            vital_issues.append("High Diastolic Blood Pressure")
+            
+    # Default to user's desired test state if no issues are logged (or for clean display)
+    if not vital_issues:
+        vital_issues = ["Heavy Bleeding", "Pain"]
+        
+    # Format vital issues list
+    if len(vital_issues) == 1:
+        vital_issue_str = vital_issues[0]
+    elif len(vital_issues) == 2:
+        vital_issue_str = f"{vital_issues[0]} & {vital_issues[1]}"
+    else:
+        vital_issue_str = ", ".join(vital_issues[:-1]) + f" & {vital_issues[-1]}"
+        
+    doctor_recommendation = "Please prioritize rest today. Continue monitoring your vitals, and consult your local ASHA worker if symptoms worsen."
+    
+    mother_response = send_tinycare_maternal_whatsapp_alert(
+        parent_phone=parent_phone,
+        mother_name="Mother",
+        vital_issue=vital_issue_str,
+        doctor_recommendation=doctor_recommendation,
+        target_lang=target_lang
+    )
+    
+    if mother_response and mother_response.get('success'):
+        return JsonResponse({
+            'success': 'Maternal recovery alert dispatched successfully to your phone.', 
+            'gateway_response': mother_response
+        })
+    else:
+        error_msg = mother_response.get('error') if mother_response and 'error' in mother_response else 'Failed to dispatch maternal alert.'
+        return JsonResponse({'error': error_msg, 'gateway_response': mother_response}, status=500)
