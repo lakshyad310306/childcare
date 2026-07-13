@@ -36,6 +36,9 @@
         </div>
     </div>
     <div class="flex items-center gap-3">
+        <button onclick="sendMaternalWhatsAppAlert(this)" class="bg-[#25D366] hover:bg-[#128C7E] text-white px-6 py-3 rounded-xl font-bold border-none cursor-pointer transition-all text-xs flex items-center gap-2">
+            <i class="fab fa-whatsapp text-sm"></i> Test Maternal Alert
+        </button>
         <a href="{% url 'manage_mother_profile' %}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-3 rounded-xl font-bold border border-slate-200 transition-all text-xs flex items-center gap-2">
             <i class="fas fa-edit text-rose-500"></i> Update Profile & Diet
         </a>
@@ -633,5 +636,28 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
+function sendMaternalWhatsAppAlert(btn) {
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin text-sm"></i> Sending...';
+    btn.disabled = true;
+    
+    fetch("{% url 'trigger_maternal_whatsapp_alert' %}")
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("✅ " + data.success + "\nYour daily wellness reminder has been sent via WhatsApp!");
+            } else {
+                alert("❌ Error: " + (data.error || "Failed to dispatch alert."));
+            }
+        })
+        .catch(error => {
+            alert("❌ Network Error: " + error);
+        })
+        .finally(() => {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
+}
 </script>
 {% endblock %}
