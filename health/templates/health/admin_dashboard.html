@@ -90,9 +90,6 @@
                                     <a href="{% url 'child_detail' child.id %}" class="btn" style="padding: 0.5rem; background: #f1f5f9; color: var(--text-main);" title="Update Records">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button onclick="sendWhatsAppVaxAlert(this, '{{ child.id }}')" class="btn" style="padding: 0.5rem; background: #e6fcf5; color: #0ca678; border: none; cursor: pointer;" title="Send WhatsApp Vax Alert">
-                                        <i class="fab fa-whatsapp"></i>
-                                    </button>
                                     <a href="{% url 'trigger_urgent_reminder' child.id %}" class="btn" style="padding: 0.5rem; background: var(--pastel-red); color: #991b1b;" title="Send Urgent Alert">
                                         <i class="fas fa-bolt"></i>
                                     </a>
@@ -114,29 +111,4 @@
     </div>
 
 </div>
-
-<script>
-    function sendWhatsAppVaxAlert(btn, childId) {
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        btn.disabled = true;
-        
-        fetch(`/child/${childId}/whatsapp-vax-alert/`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("✅ " + data.success + "\nPersonalized alert dispatched to the parent.");
-                } else {
-                    alert("❌ Error: " + (data.error || "Failed to dispatch alert."));
-                }
-            })
-            .catch(error => {
-                alert("❌ Network Error: " + error);
-            })
-            .finally(() => {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-            });
-    }
-</script>
 {% endblock %}

@@ -33,7 +33,7 @@ client.on('qr', async (qr) => {
 
     // Also save as PNG in artifacts directory for easy scanning
     try {
-        const qrPath = 'C:/Users/laksh/.gemini/antigravity-ide/brain/f7653888-bd1a-4d62-b34c-7cbfb66692c7/qr_code.png';
+        const qrPath = 'C:/Users/PC/.gemini/antigravity-ide/brain/c1ea6d7f-eb4c-42fd-b334-918485c4d14e/qr.png';
         await QRCodeImage.toFile(qrPath, qr, {
             color: {
                 dark: '#000000',

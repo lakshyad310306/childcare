@@ -642,7 +642,7 @@ function sendMaternalWhatsAppAlert(btn) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin text-sm"></i> Sending...';
     btn.disabled = true;
     
-    fetch("{% url 'trigger_maternal_whatsapp_alert' %}")
+    fetch("{% url 'whatsapp_demo_trigger_view' %}")
         .then(response => response.json())
         .then(data => {
             if (data.success) {
