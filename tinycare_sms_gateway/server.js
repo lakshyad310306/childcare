@@ -1,6 +1,7 @@
 const express = require('express');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
+const qrcodeImage = require('qrcode');
 
 const app = express();
 const port = 3000;
@@ -17,6 +18,14 @@ const client = new Client({
 client.on('qr', (qr) => {
     console.log('QR RECEIVED. Please scan it using WhatsApp:');
     qrcode.generate(qr, { small: true });
+    
+    const imagePath = 'C:/Users/PC/.gemini/antigravity-ide/brain/c1ea6d7f-eb4c-42fd-b334-918485c4d14e/qr.png';
+    qrcodeImage.toFile(imagePath, qr, {
+        color: { dark: '#000000', light: '#FFFFFF' }
+    }, function (err) {
+        if (err) console.error('Failed to save QR code image:', err);
+        else console.log('QR code saved as ' + imagePath);
+    });
 });
 
 client.on('ready', () => {
